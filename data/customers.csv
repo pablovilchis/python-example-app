@@ -1,0 +1,14 @@
+customerId,customerName,customerEmail,customerBirthday,customerGender,customerAddress,maritalStatus,dependents,date,lineId
+0001,John Doe,j.doe@proffesionalemail.com,01/02/1966,M,"1234 Fake St. Chicago, IL 60007",M,4,01/01/2017,1
+0002,Jane Doe,jane.doe@proffesionalemail.com,05/02/1969,F,"1234 Fake St. Chicago, IL 60007",M,4,01/01/2017,2
+0003,John Drapper,drapper@scpd.com,06/01/1926,M,"856 Madison Ave New York, NY 10001",S,0,01/01/2017,3
+0004,Marty Williams,martzer@coolemail.com,07/01/1983,M,"922 Cool St. Queens, NY 11365",S,2,01/01/2017,4
+0005,Janet Torres,janet1973@obsoleteemail.com,06/02/1973,F,"854 Random Street Newark, NJ 07112",D,1,01/01/2017,5
+0006,Xiao Li,xiao@governmentissuedemail.ch,09/05/1990,F,"1255 Standard Naming Ave Hong Kong, CH 999077",S,0,01/01/2017,6
+0007,Bruce Lee,solicitations@moviestudio.com,11/27/1940,M,"342 Mean St. Los Angeles, CA 90010",M,1,01/01/2017,7
+0008,Melanie Ron,melanie@popularemail.com,01/01/2000,F,"866 Totally Real St. Madison, WI 53558",S,0,01/01/2017,8
+0009,Alistair Kirk,a.kirk@spacedemons.com,10/30/1946,M,"666 Scary St. Philadelphia, PA 19019",D,0,01/01/2017,9
+0010,Damian Wayne,d.w@batfamily.com,06/01/1987,M,"4000 Warner Blvd, Burbank, CA 91522",S,0,01/01/2017,10
+0001,John Doe,j.doe@proffesionalemail.com,01/02/1966,M,"156 Not Real Ave Chicago, IL 60640",D,4,03/15/2017,11
+0002,Jane Kowalski,jane.doe@proffesionalemail.com,05/02/1969,F,"1234 Fake St. Chicago, IL 60007",D,4,03/15/2017,12
+0006,Xiao Li,xiao@governmentissuedemail.ch,09/05/1990,F,"354 Star Ave. Los Angeles, CA 90005",M,0,3/20/17,13

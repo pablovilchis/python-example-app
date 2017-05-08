@@ -1,0 +1,17 @@
+itemId,itemCategory,itemName,itemCost,lineId
+GT001,Games & Toys,Super Fun Boardgame,$50.00,1
+GT002,Games & Toys,Summer’s Hot New Toy,$75.00,2
+GT003,Games & Toys,Intellectually Stimulating Toy,$120.00,3
+GT004,Games & Toys,Mass Produced Garbage,$30.00,4
+CT001,Computers & Tech,Consumer Level Crap,$300.00,5
+CT002,Computers & Tech,Overpriced Chic Hardware,$999.00,6
+CT003,Computers & Tech,Ancient Hardware That Still Sort of Works,$100.00,7
+CT004,Computers & Tech,Spare Parts,$450.00,8
+HF001,Health & Fitness,Weights,$20.00,9
+HF002,Health & Fitness,Protein Shakes,$15.00,10
+HF003,Health & Fitness,Grappling Hook,$8.00,11
+HF004,Health & Fitness,Conspicuously Shaped Thrown Items,$2.00,12
+CL001,Clothes,Form Fitting Black Clothes,$150.00,13
+CL002,Clothes,Regular Clothes,$50.00,14
+CL003,Clothes,+2 Chainmail,"$1,000.00",15
+CL004,Clothes,Retro-Cool Track Suite,$75.00,16
