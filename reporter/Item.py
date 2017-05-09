@@ -12,6 +12,9 @@ class Item:
         self.cost = cost
         self.line_id = line_id
 
+    def __hash__(self):
+        return hash(id(self))
+
     def __str__(self):
         return str(self.__dict__)
 
@@ -23,4 +26,9 @@ class Item:
     def __eq__(self, other):
         if not isinstance(other, type(self)):
             return NotImplemented
-        return self.cost == other.cost
+        return self.__dict__ == other.__dict__
+
+    def __ne__(self, other):
+        if not isinstance(other, type(self)):
+            return NotImplemented
+        return other is not self

@@ -14,15 +14,15 @@ HERE = path.abspath(path.dirname(__file__))
 # Get version from main script
 VERSION = re.search(
     r'^__version__\s*=\s*"(.*)"',
-    open('reporter/reporter.py').read(),
-    re.M
-).group(1)
+    open('reporter/reporter.py').read(), flags=re.M).group(1)
 
 
 # Get the long description from the README file
-
-with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
-    LONG_DESCRIPTION = f.read()
+try:
+    import pypandoc
+    LONG_DESCRIPTION = pypandoc.convert('README.md', 'rst')
+except (IOError, ImportError):
+    LONG_DESCRIPTION = open('README.md').read()
 
 
 setup(
@@ -57,7 +57,7 @@ setup(
 
         # Specify the Python versions you support here. In particular, ensure
         # that you indicate whether you support Python 2, Python 3 or both.
-        'Programming Language :: Python :: 2',
+
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.3',
@@ -70,7 +70,7 @@ setup(
     # your project is installed. For an analysis of "install_requires" vs pip's
     # requirements files see:
     # https://packaging.python.org/en/latest/requirements.html
-    install_requires=['pypandoc', 'geograpy'],
+    install_requires=['pypandoc', 'googlemaps'],
     entry_points={
         "console_scripts": ['reporter = reporter.reporter:main']
     },
