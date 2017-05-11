@@ -1,13 +1,14 @@
 """reporter.reporter: provides entry point main()."""
 from __future__ import (absolute_import, division,
                         print_function, unicode_literals)
+
+import datetime
 import sys
-from datetime import date
+
 import googlemaps
-from . import CSVImporter
 
-# from .Customer import Customer
-
+from reporter import CSVImporter
+import reporter.domain
 
 # -*- coding: utf-8 -*-
 
@@ -22,25 +23,37 @@ def main():
     print("Executing bootstrap version %s." % __version__)
     # print("Stuff and Boo():\n%s\n%s" % (Stuff, Boo()))
 
-    customers_importer = CSVImporter.CSVImporter('data/customers.csv',
-                                                 'Customer')
-    customers = customers_importer.to_set()
-
-    items_importer = CSVImporter.CSVImporter('data/items.csv', 'Item')
-    items = items_importer.to_set()
-
-    sales_importer = CSVImporter.CSVImporter('data/sales.csv', 'Sale')
-    sales = sales_importer.to_set()
+    customers = csv_import('data/customers.csv', 'Customer')
+    items = csv_import('data/items.csv', 'Item')
+    sales = csv_import('data/sales.csv', 'Sale')
 
     age_groups = [0, 19, 29, 39, 150]
+    customers_by_age = customers_group_age(age_groups, customers)
+
     regions = ['Eastern', 'Central', 'Mountain', 'Pacific']
+    customers_by_region = customers_group_region(customers, regions)
 
-    customers_by_age = []
+
+def csv_import(file, to_type):
+    csv_importer = CSVImporter.CSVImporter(file, to_type)
+    result_set = csv_importer.to_set()
+    return result_set
+
+
+def customers_group_region(customers, regions):
     customers_by_region = []
+    for idx, region in enumerate(regions):
+        if len(regions) - 1 <= idx:
+            break
+        customers_by_region.append([c2 for c2 in customers
+                                    if filter_by_region(c2, region)])
+    return customers_by_region
 
+
+def customers_group_age(customers: list, age_groups: list) -> list:
+    customers_by_age = []
     age_from = age_groups[0]
     age_groups_upto = age_groups[1:]
-
     for idx, age_upto in enumerate(age_groups_upto):
         if len(age_groups) - 1 <= idx:
             break
@@ -49,29 +62,28 @@ def main():
                                                age_upto)]
         customers_by_age.append(customers_filtered)
         age_from = age_upto
-
-    for idx, region in enumerate(regions):
-        if len(regions) - 1 <= idx:
-            break
-        customers_by_region.append([c2 for c2 in customers
-                                    if filter_by_region(c2, region)])
+    return customers_by_age
 
 
-def calculate_age(born):
+def calculate_age(born: datetime) -> int:
     """Calculate age from birthday."""
-    today = date.today()
+    today = datetime.date.today()
     return today.year - born.year - ((today.month, today.day) <
                                      (born.month, born.day))
 
 
-def filter_by_age(customer, age_from, age_to):
+def filter_by_age(customer: reporter.domain.Customer, age_from: int, age_to: int) -> bool:
     """Customer entity."""
     return age_from <= calculate_age(customer.birthday) < age_to
 
 
-def filter_by_region(customer, region):
+def filter_by_region(customer: reporter.domain.Customer, region: str) -> bool:
     """Customer entity."""
+
     gmaps = googlemaps.Client(key='AIzaSyCY4P3c7BjpGgrxP8YyYJ6F2_TTWC4kl7U')
     geocode_result = gmaps.geocode(customer.address)
-    time_zone = gmaps.timezone(geocode_result)
-    return region in time_zone.timeZoneName.partition(' ')[0]
+    if len(geocode_result):
+        time_zone = gmaps.timezone(geocode_result[0]['geometry']['location'])
+        return region in time_zone['timeZoneName'].partition(' ')[0]
+    else:
+        return False
