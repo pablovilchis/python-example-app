@@ -4,6 +4,7 @@ from __future__ import (absolute_import, division,
 
 import datetime
 import sys
+import collections
 
 import googlemaps
 
@@ -23,15 +24,34 @@ def main():
     print("Executing bootstrap version %s." % __version__)
     # print("Stuff and Boo():\n%s\n%s" % (Stuff, Boo()))
 
+    # Import the csv files and export them as a list of objects
     customers = csv_import('data/customers.csv', 'Customer')
     items = csv_import('data/items.csv', 'Item')
     sales = csv_import('data/sales.csv', 'Sale')
 
+    # Group imported customers by age
     age_groups = [0, 19, 29, 39, 150]
     customers_by_age = customers_group_age(age_groups, customers)
 
+    # Group imported customers by region
     regions = ['Eastern', 'Central', 'Mountain', 'Pacific']
     customers_by_region = customers_group_region(customers, regions)
+
+    # Group imported items by ??
+    items_dict = collections.defaultdict(list)
+
+    for item in items:
+        items_dict[item[0]].extend(item[1:4])
+
+    [sum(i) for i in zip(*items_dict)]
+
+    # Group imported sales by saleId
+    sales_dict = collections.defaultdict(list)
+
+    for sale in sales:
+        sales_dict[sale.sale_id].extend(sale[0:1, 3:5])
+
+
 
 
 def csv_import(file, to_type):
