@@ -2,108 +2,97 @@
 from __future__ import (absolute_import, division,
                         print_function, unicode_literals)
 
-import datetime
 import sys
-import collections
-
-import googlemaps
-
-from reporter import CSVImporter
-import reporter.domain
+import os
+import pandas as pd
+import googlemaps as gm
+from datetime import datetime
 
 # -*- coding: utf-8 -*-
-
-
 __version__ = "0.2.0"
 
 
 def main():
     """Main entry point."""
-    if sys.version_info < 2.7:
+    if not sys.version_info[0] >= 3:
         raise Exception("Python 2.7 or a more recent version is required.")
     print("Executing bootstrap version %s." % __version__)
-    # print("Stuff and Boo():\n%s\n%s" % (Stuff, Boo()))
 
     # Import the csv files and export them as a list of objects
-    customers = csv_import('data/customers.csv', 'Customer')
-    items = csv_import('data/items.csv', 'Item')
-    sales = csv_import('data/sales.csv', 'Sale')
+    customers = csv_import(os.path.join(os.path.dirname(__file__), 'data/customers.csv')).drop_duplicates()
+    items = csv_import(os.path.join(os.path.dirname(__file__), './data/items.csv'))
+    sales = csv_import(os.path.join(os.path.dirname(__file__), './data/sales.csv'))
 
-    # Group imported customers by age
+    # Join sales, customers, items dataframes
+    sale_cust = pd.merge(sales, customers, on='customerId')
+    sale_cust_item = pd.merge(sale_cust, items, on='itemId')
+
+    # Calculate age from birthday
+    sale_cust_item['age'] = [calculate_age(x) for x in sale_cust_item['customerBirthday']]
+    # Group sale_cust_item by age
     age_groups = [0, 19, 29, 39, 150]
-    customers_by_age = customers_group_age(age_groups, customers)
+    sale_cust_item['age_group'] = [calculate_age_group(x, age_groups) for x in sale_cust_item['age']]
 
-    # Group imported customers by region
+    # Group sale_cust_item by region
     regions = ['Eastern', 'Central', 'Mountain', 'Pacific']
-    customers_by_region = customers_group_region(customers, regions)
+    sale_cust_item['region'] = [calculate_region(x, regions) for x in sale_cust_item['customerAddress']]
 
-    # Group imported items by ??
-    items_dict = collections.defaultdict(list)
+    print(('Customers imported:', customers.count()), ' ')
+    print(('Items imported:', items.count()), ' ')
+    print(('Sales imported:', sales.count()), ' ')
 
-    for item in items:
-        items_dict[item[0]].extend(item[1:4])
+    print('Customers group by Age')
+    print_table_groupby_total(sale_cust_item, ['age_group', 'itemName'])
 
-    [sum(i) for i in zip(*items_dict)]
-
-    # Group imported sales by saleId
-    sales_dict = collections.defaultdict(list)
-
-    for sale in sales:
-        sales_dict[sale.sale_id].extend(sale[0:1, 3:5])
+    print('Customers group by Region')
+    print_table_groupby_total(sale_cust_item, ['region', 'itemName'])
 
 
-
-
-def csv_import(file, to_type):
-    csv_importer = CSVImporter.CSVImporter(file, to_type)
-    result_set = csv_importer.to_set()
+def csv_import(file):
+    result_set = pd.read_csv(file, parse_dates=True, infer_datetime_format=True)
+    result_set = result_set.drop('lineId', axis=1)
     return result_set
 
 
-def customers_group_region(customers, regions):
-    customers_by_region = []
-    for idx, region in enumerate(regions):
-        if len(regions) - 1 <= idx:
-            break
-        customers_by_region.append([c2 for c2 in customers
-                                    if filter_by_region(c2, region)])
-    return customers_by_region
+def print_table_groupby_total(df: pd.DataFrame, group_by: list):
+    # df = pd.DataFrame([{fn: getattr(f, fn) for fn in fields} for f in arr])
+    dcf = df.groupby(group_by).size().groupby(level=len(group_by)-1, group_keys=False).nlargest(1)
+    print(dcf)
 
 
-def customers_group_age(customers: list, age_groups: list) -> list:
-    customers_by_age = []
+def calculate_age_group(base_column: int, age_groups: list):
     age_from = age_groups[0]
     age_groups_upto = age_groups[1:]
     for idx, age_upto in enumerate(age_groups_upto):
         if len(age_groups) - 1 <= idx:
             break
-        customers_filtered = [c for c in customers
-                              if filter_by_age(c, age_from,
-                                               age_upto)]
-        customers_by_age.append(customers_filtered)
+        if filter_by_age(base_column, age_from, age_upto-1):
+            result = '{0}-{1}'.format(age_from, age_upto-1)
+            return result
         age_from = age_upto
-    return customers_by_age
 
 
-def calculate_age(born: datetime) -> int:
+def filter_by_age(age, age_from: int, age_upto: int) -> bool:
+    """Customer entity."""
+    return age_from <= age <= age_upto
+
+
+def calculate_age(date) -> int:
     """Calculate age from birthday."""
-    today = datetime.date.today()
-    return today.year - born.year - ((today.month, today.day) <
-                                     (born.month, born.day))
+    today = datetime.today()
+    birthday = datetime.strptime(date, '%m/%d/%Y')
+    return today.year - birthday.year - ((today.month, today.day) <
+                                         (birthday.month, birthday.day))
 
 
-def filter_by_age(customer: reporter.domain.Customer, age_from: int, age_to: int) -> bool:
+def calculate_region(address: str, regions: list) -> str:
     """Customer entity."""
-    return age_from <= calculate_age(customer.birthday) < age_to
-
-
-def filter_by_region(customer: reporter.domain.Customer, region: str) -> bool:
-    """Customer entity."""
-
-    gmaps = googlemaps.Client(key='AIzaSyCY4P3c7BjpGgrxP8YyYJ6F2_TTWC4kl7U')
-    geocode_result = gmaps.geocode(customer.address)
+    gmaps = gm.Client(key='AIzaSyCY4P3c7BjpGgrxP8YyYJ6F2_TTWC4kl7U')
+    geocode_result = gmaps.geocode(address)
     if len(geocode_result):
         time_zone = gmaps.timezone(geocode_result[0]['geometry']['location'])
-        return region in time_zone['timeZoneName'].partition(' ')[0]
-    else:
-        return False
+        region = time_zone['timeZoneName'].partition(' ')[0]
+        if region in regions:
+            return region
+        else:
+            return ''
